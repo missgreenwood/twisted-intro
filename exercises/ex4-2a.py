@@ -11,6 +11,9 @@ import datetime, errno, optparse, socket
 from twisted.internet import main
 
 
+finished = dict()
+ID = 0
+
 def parse_args():
     usage = """usage: %prog [options] [hostname]:port ...
 
@@ -20,6 +23,7 @@ Run it like this:
   python ex4-2.py port1 port2 port3 ...
 
 If you are in the base directory of the twisted-intro package,
+    print(type(sockets))
 you could run it like this:
 
   python twisted-client-1/ex4-2.py 10001 10002 10003
@@ -63,6 +67,12 @@ class PoetrySocket(object):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(address)
         self.sock.setblocking(0)
+        self.finished = 1
+        global ID
+        self.id = ID
+        ID += 1 
+        global finished
+        finished[str(self.id)] = self.finished
 
         # tell the Twisted reactor to monitor this socket for reading
         from twisted.internet import reactor
@@ -105,6 +115,7 @@ class PoetrySocket(object):
 
         if not bytes:
             print 'Task %d finished' % self.task_num
+            finished[str(self.id)] = 0
             return main.CONNECTION_DONE
         else:
             msg = 'Task %d: got %d bytes of poetry from %s'
@@ -121,9 +132,8 @@ class PoetrySocket(object):
 
 
 def cancelPoetryReading(sockets): 
-    for i, sock in enumerate(sockets):
-        print("Connection lost for socket %d" % i)
-        sock.connectionLost("Timeout occurred")
+    print("There should be the socket closing function")  # TODO
+
 
 def poetry_main():
     addresses = parse_args()
@@ -132,9 +142,13 @@ def poetry_main():
 
     sockets = [PoetrySocket(i + 1, addr) for i, addr in enumerate(addresses)]
 
+    print(finished)
+
     from twisted.internet import reactor
-    reactor.callLater(5, cancelPoetryReading, sockets)
+    if not all(x==0 for x in finished.values()):
+        reactor.callLater(5, cancelPoetryReading, socket)
     reactor.run()
+
     elapsed = datetime.datetime.now() - start
 
     for i, sock in enumerate(sockets):
@@ -142,6 +156,7 @@ def poetry_main():
 
     print 'Got %d poems in %s' % (len(addresses), elapsed)
 
+    print(finished)
 
 if __name__ == '__main__':
     poetry_main()
