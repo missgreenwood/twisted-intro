@@ -1,6 +1,6 @@
 # Solution to exercise 4-2: 
 
-# Use callLater to make the client timeout if a poem hasn’t finished after a given interval. 
+# Use callLater() to make the client timeout if a poem hasn't finished after a given interval. 
 # Read about the return value of callLater so you can cancel the timeout if the poem finishes on time.
 
 # NOTE: This should not be used as the basis for production code.
@@ -120,6 +120,11 @@ class PoetrySocket(object):
         return '%s:%s' % (host or '127.0.0.1', port)
 
 
+def cancelPoetryReading(sockets): 
+    for i, sock in enumerate(sockets):
+        print("Connection lost for socket %d" % i)
+        sock.connectionLost("Timeout occurred")
+
 def poetry_main():
     addresses = parse_args()
 
@@ -128,8 +133,8 @@ def poetry_main():
     sockets = [PoetrySocket(i + 1, addr) for i, addr in enumerate(addresses)]
 
     from twisted.internet import reactor
+    reactor.callLater(5, cancelPoetryReading, sockets)
     reactor.run()
-
     elapsed = datetime.datetime.now() - start
 
     for i, sock in enumerate(sockets):
