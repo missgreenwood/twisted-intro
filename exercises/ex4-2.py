@@ -20,13 +20,13 @@ def parse_args():
 This is the Get Poetry Now! client, Twisted version 1.0.
 Run it like this:
 
-  python ex4-2a.py port1 port2 port3 ...
+  python ex4-2.py port1 port2 port3 ...
 
 If you are in the base directory of the twisted-intro package,
     print(type(sockets))
 you could run it like this:
 
-  python twisted-client-1/ex4-2a.py 10001 10002 10003
+  python twisted-client-1/ex4-2.py 10001 10002 10003
 
 to grab poetry from servers on ports 10001, 10002, and 10003.
 
